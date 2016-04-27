@@ -1,0 +1,201 @@
+-- DROP SCHEMA geonames;
+CREATE SCHEMA IF NOT EXISTS geonames COLLATE = utf8_general_ci;
+USE geonames;
+
+CREATE TABLE IF NOT EXISTS geonames (
+    geonameid int PRIMARY KEY,
+    name varchar(200),
+    asciiname varchar(200),
+    alternatenames varchar(4000),
+    latitude decimal(10,7),
+    longitude decimal(10,7),
+    fclass char(1),
+    fcode varchar(10),
+    country varchar(2),
+    cc2 varchar(60),
+    admin1 varchar(20),
+    admin2 varchar(80),
+    admin3 varchar(20),
+    admin4 varchar(20),
+    population int,
+    elevation int,
+    gtopo30 int,
+    timezone varchar(40),
+    moddate date
+) CHARACTER SET utf8;
+
+TRUNCATE geonames;
+
+CREATE TABLE IF NOT EXISTS alternate_names (
+    alternatenameId int PRIMARY KEY,
+    geonameid int,
+    isoLanguage varchar(7),
+    alternateName varchar(200),
+    isPreferredName boolean,
+    isShortName boolean,
+    isColloquial boolean,
+    isHistoric boolean
+) CHARACTER SET utf8;
+
+TRUNCATE alternate_names;
+
+CREATE TABLE IF NOT EXISTS country_infos (
+    iso_alpha2 char(2),
+    iso_alpha3 char(3),
+    iso_numeric int,
+    fips_code varchar(3),
+    name varchar(200),
+    capital varchar(200),
+    areainsqkm float,
+    population integer,
+    continent char(2),
+    tld char(3),
+    currency char(3),
+    currencyName char(20),
+    phone char(10),
+    postalCodeFormat char(20),
+    postalCodeRegex char(20),
+    geonameId int PRIMARY KEY,
+    languages varchar(200),
+    neighbours char(20),
+    equivalentFipsCode char(10)
+) CHARACTER SET utf8;
+
+TRUNCATE country_infos;
+
+CREATE TABLE IF NOT EXISTS iso_language_codes (
+    iso_639_3 CHAR(4) PRIMARY KEY,
+    iso_639_2 VARCHAR(50),
+    iso_639_1 VARCHAR(50),
+    language_name VARCHAR(200)
+) CHARACTER SET utf8;
+
+TRUNCATE iso_language_codes;
+
+CREATE TABLE IF NOT EXISTS admin2_codes (
+    code CHAR(8),
+    name TEXT,
+    ascii_name TEXT,
+    geonameid int PRIMARY KEY
+) CHARACTER SET utf8;
+
+TRUNCATE admin2_codes;
+
+CREATE TABLE IF NOT EXISTS admin1_ascii_codes (
+    code CHAR(6),
+    name TEXT,
+    nameAscii TEXT,
+    geonameid int PRIMARY KEY
+) CHARACTER SET utf8;
+
+TRUNCATE admin1_ascii_codes;
+
+CREATE TABLE IF NOT EXISTS feature_codes (
+    code CHAR(7) PRIMARY KEY,
+    name VARCHAR(200),
+    description TEXT
+) CHARACTER SET utf8;
+
+TRUNCATE feature_codes;
+
+CREATE TABLE IF NOT EXISTS time_zones (
+    timeZoneId VARCHAR(200) PRIMARY KEY,
+    GMT_offset DECIMAL(3,1),
+    DST_offset DECIMAL(3,1)
+) CHARACTER SET utf8;
+
+TRUNCATE time_zones;
+
+CREATE TABLE IF NOT EXISTS continent_codes (
+    code CHAR(2),
+    name VARCHAR(20),
+    geonameid INT PRIMARY KEY
+) CHARACTER SET utf8;
+
+CREATE TABLE IF NOT EXISTS shapes_simpliefied_low (
+    geonameid INT PRIMARY KEY,
+    geojson TEXT
+) CHARACTER SET utf8;
+
+TRUNCATE continent_codes;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS `CreateIndex` $$
+CREATE PROCEDURE `CreateIndex`
+(
+    given_database VARCHAR(64),
+    given_table    VARCHAR(64),
+    given_index    VARCHAR(64),
+    given_columns  VARCHAR(64)
+)
+BEGIN
+    DECLARE IndexIsThere INTEGER;
+
+    SELECT COUNT(1) INTO IndexIsThere
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE table_schema = given_database
+    AND   table_name   = given_table
+    AND   index_name   = given_index;
+
+    IF IndexIsThere = 0 THEN
+        SET @sqlstmt = CONCAT('CREATE INDEX ',given_index,' ON ',
+        given_database,'.',given_table,' (',given_columns,')');
+        PREPARE st FROM @sqlstmt;
+        EXECUTE st;
+        DEALLOCATE PREPARE st;
+    ELSE
+        SELECT CONCAT('Index ',given_index,' already exists on Table ',
+        given_database,'.',given_table) WARN;   
+    END IF;
+
+END $$
+
+DELIMITER ;
+
+-- ************************** INDICES CREATION **************************
+
+-- geonames indices
+call CreateIndex('geonames', 'geonames', 'geonames_name_idx', 'name');
+call CreateIndex('geonames', 'geonames', 'geonames_asciiname_idx', 'asciiname');
+call CreateIndex('geonames', 'geonames', 'geonames_country_idx', 'country');
+call CreateIndex('geonames', 'geonames', 'geonames_admin1_idx', 'admin1');
+call CreateIndex('geonames', 'geonames', 'geonames_admin2_idx', 'admin2');
+
+-- alternatenames indices
+call CreateIndex('geonames', 'alternate_names', 'alternatenames_geonameid_idx', 'geonameid');
+call CreateIndex('geonames', 'alternate_names', 'alternatenames_alternateName_idx', 'alternateName');
+
+-- country_infos indices
+call CreateIndex('geonames', 'country_infos', 'country_infos_iso_alpha2_idx', 'iso_alpha2');
+call CreateIndex('geonames', 'country_infos', 'country_infos_name_idx', 'name');
+
+-- ************************** GEODATA IMPORT ****************************
+
+SELECT 'Importing geonames...'
+LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/allCountries.txt' INTO TABLE geonames (geonameid,name,asciiname,alternatenames,latitude,longitude,fclass,fcode,country,cc2, admin1,admin2,admin3,admin4,population,elevation,gtopo30,timezone,moddate);
+SELECT 'Importing alternate_names...'
+LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/alternateNames.txt' INTO TABLE alternate_names (alternatenameid,geonameid,isoLanguage,alternateName,isPreferredName,isShortName,isColloquial,isHistoric);
+SELECT 'Importing iso_language_codes...'
+LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/iso-languagecodes.txt' INTO TABLE iso_language_codes (iso_639_3, iso_639_2, iso_639_1, language_name);
+SELECT 'Importing admin2_codes...'
+LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/admin2Codes.txt' INTO TABLE admin2_codes (code, name, ascii_name, geonameid);
+SELECT 'Importing admin1_ascii_codes...'
+LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/admin1CodesASCII.txt' INTO TABLE admin1_ascii_codes (code, name, nameAscii, geonameid);
+SELECT 'Importing feature_codes...'
+LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/featureCodes_en.txt' INTO TABLE feature_codes (code, name, description);
+SELECT 'Importing time_zones...'
+LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/timeZones.txt' INTO TABLE time_zones IGNORE 1 LINES (timeZoneId, GMT_offset, DST_offset);
+SELECT 'Importing country_infos...'
+LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/countryInfo-n.txt' INTO TABLE country_infos IGNORE 1 LINES (iso_alpha2,iso_alpha3,iso_numeric,fips_code,name,capital,areaInSqKm,population,continent,languages,currency,geonameId);
+
+-- ************************** CONTINENTS CREATION ***********************
+
+INSERT INTO continent_codes (code, name, geonameId) VALUES 
+	('AF', 'Africa', '6255146'),
+    ('AS', 'Asia', '6255147'),
+    ('EU', 'Europe', '6255148'),
+    ('NA', 'North America', '6255149'),
+    ('OC', 'Oceania', '6255151'),
+    ('SA', 'South America', '6255150'),
+	('AN', 'Antarctica', '6255152');
