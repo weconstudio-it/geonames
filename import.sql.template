@@ -172,21 +172,21 @@ call CreateIndex('geonames', 'country_infos', 'country_infos_name_idx', 'name');
 
 -- ************************** GEODATA IMPORT ****************************
 
-SELECT 'Importing geonames...'
+SELECT 'Importing geonames...';
 LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/allCountries.txt' INTO TABLE geonames (geonameid,name,asciiname,alternatenames,latitude,longitude,fclass,fcode,country,cc2, admin1,admin2,admin3,admin4,population,elevation,gtopo30,timezone,moddate);
-SELECT 'Importing alternate_names...'
+SELECT 'Importing alternate_names...';
 LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/alternateNames.txt' INTO TABLE alternate_names (alternatenameid,geonameid,isoLanguage,alternateName,isPreferredName,isShortName,isColloquial,isHistoric);
-SELECT 'Importing iso_language_codes...'
+SELECT 'Importing iso_language_codes...';
 LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/iso-languagecodes.txt' INTO TABLE iso_language_codes (iso_639_3, iso_639_2, iso_639_1, language_name);
-SELECT 'Importing admin2_codes...'
+SELECT 'Importing admin2_codes...';
 LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/admin2Codes.txt' INTO TABLE admin2_codes (code, name, ascii_name, geonameid);
-SELECT 'Importing admin1_ascii_codes...'
+SELECT 'Importing admin1_ascii_codes...';
 LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/admin1CodesASCII.txt' INTO TABLE admin1_ascii_codes (code, name, nameAscii, geonameid);
-SELECT 'Importing feature_codes...'
+SELECT 'Importing feature_codes...';
 LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/featureCodes_en.txt' INTO TABLE feature_codes (code, name, description);
-SELECT 'Importing time_zones...'
+SELECT 'Importing time_zones...';
 LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/timeZones.txt' INTO TABLE time_zones IGNORE 1 LINES (timeZoneId, GMT_offset, DST_offset);
-SELECT 'Importing country_infos...'
+SELECT 'Importing country_infos...';
 LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/countryInfo-n.txt' INTO TABLE country_infos IGNORE 1 LINES (iso_alpha2,iso_alpha3,iso_numeric,fips_code,name,capital,areaInSqKm,population,continent,languages,currency,geonameId);
 
 -- ************************** CONTINENTS CREATION ***********************

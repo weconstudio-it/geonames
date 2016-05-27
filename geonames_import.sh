@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#FILES=('allCountries.zip' 'alternateNames.zip' 'admin2Codes.txt' 'admin1CodesASCII.txt' 'featureCodes_en.txt' 'timeZones.txt' 'countryInfo.txt' 'shapes_simplified_low.zip');
+
 FILES=('allCountries.zip' 'alternateNames.zip' 'admin2Codes.txt' 'admin1CodesASCII.txt' 'featureCodes_en.txt' 'timeZones.txt' 'countryInfo.txt' 'shapes_simplified_low.zip');
 
 [ -e data ] || mkdir data
@@ -24,6 +26,6 @@ sed -e "s@PATH_PLACEHOLDER@$DATA_PATH@g" import.sql.template > tmp_import.sql
 
 echo "Importing data..."
 
-mysql --local-infile <tmp_import.sql
+mysql -u root -proot --local-infile <tmp_import.sql
 
 rm tmp_import.sql
