@@ -26,6 +26,6 @@ sed -e "s@PATH_PLACEHOLDER@$DATA_PATH@g" import.sql.template > tmp_import.sql
 
 echo "Importing data..."
 
-mysql -u root -proot --local-infile <tmp_import.sql
+mysql -u root -p --local-infile <tmp_import.sql
 
 rm tmp_import.sql
