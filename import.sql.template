@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS country_infos (
     phone char(10),
     postalCodeFormat char(20),
     postalCodeRegex char(20),
-    geonameId int PRIMARY KEY,
+    geonameId int,
     languages varchar(200),
     neighbours char(20),
     equivalentFipsCode char(10)
