@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS alternate_names (
 TRUNCATE alternate_names;
 
 CREATE TABLE IF NOT EXISTS country_infos (
-    iso_alpha2 char(2),
+    iso_alpha2 char(2) PRIMARY KEY,
     iso_alpha3 char(3),
     iso_numeric int,
     fips_code varchar(3),
