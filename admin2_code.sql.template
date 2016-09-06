@@ -1,0 +1,29 @@
+SET CHARACTER SET 'utf8';
+SET collation_connection = 'utf8_general_ci';
+
+USE geonames;
+
+CREATE TABLE IF NOT EXISTS admin2_codes (
+    code CHAR(8),
+    name TEXT,
+    ascii_name TEXT,
+    geonameid int PRIMARY KEY
+) CHARACTER SET utf8;
+
+TRUNCATE admin2_codes;
+
+SELECT 'Importing admin2_codes...';
+LOAD DATA LOCAL INFILE 'PATH_PLACEHOLDER/data/admin2Codes.txt' INTO TABLE admin2_codes CHARACTER SET UTF8 (code, name, ascii_name, geonameid);
+
+UPDATE admin2_codes SET name = REPLACE(name, 'Provincia di ', ''), ascii_name = REPLACE(ascii_name, 'Provincia di ', '');
+UPDATE admin2_codes SET name = REPLACE(name, 'Provincia dell\' ', ''), ascii_name = REPLACE(ascii_name, 'Provincia dell\' ', '');
+UPDATE admin2_codes SET name = REPLACE(name, 'Provincia dell\'', ''), ascii_name = REPLACE(ascii_name, 'Provincia dell\'', '');
+UPDATE admin2_codes SET name = REPLACE(name, 'Province of ', ''), ascii_name = REPLACE(ascii_name, 'Province of ', '');
+UPDATE admin2_codes SET name = REPLACE(name, 'Provincia ', ''), ascii_name = REPLACE(ascii_name, 'Provincia ', '');
+UPDATE admin2_codes SET name = REPLACE(name, 'Città metropolitana di ', ''), ascii_name = REPLACE(ascii_name, 'Citta metropolitana di ', '');
+UPDATE admin2_codes SET name = REPLACE(name, 'Province du ', ''), ascii_name = REPLACE(ascii_name, 'Province du ', '');
+UPDATE admin2_codes SET name = REPLACE(name, 'Province de ', ''), ascii_name = REPLACE(ascii_name, 'Province de ', '');
+UPDATE admin2_codes SET name = REPLACE(name, 'Province des ', ''), ascii_name = REPLACE(ascii_name, 'Province des ', '');
+UPDATE admin2_codes SET name = REPLACE(name, 'Provincie ', ''), ascii_name = REPLACE(ascii_name, 'Provincie ', '');
+UPDATE admin2_codes SET name = REPLACE(name, 'Província de ', ''), ascii_name = REPLACE(ascii_name, 'Província de ', '');
+UPDATE admin2_codes SET name = REPLACE(name, 'Province d’', ''), ascii_name = REPLACE(ascii_name, 'Province d’', '');
